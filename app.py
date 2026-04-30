@@ -85,13 +85,25 @@ def profile():
         flash("Please log in to view your profile.")
         return redirect(url_for("login"))
     from datetime import datetime
-    user = get_user_by_id(session["user_id"])
-    summary = get_expense_summary(session["user_id"])
-    recent = get_recent_transactions(session["user_id"])
-    categories = get_category_totals(session["user_id"])
+
+    def _valid_date(s):
+        try:
+            datetime.strptime(s, "%Y-%m-%d")
+            return s
+        except (ValueError, TypeError):
+            return None
+
+    date_from = _valid_date(request.args.get("from", ""))
+    date_to   = _valid_date(request.args.get("to", ""))
+
+    user       = get_user_by_id(session["user_id"])
+    summary    = get_expense_summary(session["user_id"], date_from, date_to)
+    recent     = get_recent_transactions(session["user_id"], date_from=date_from, date_to=date_to)
+    categories = get_category_totals(session["user_id"], date_from, date_to)
     member_since = datetime.strptime(user["created_at"], "%Y-%m-%d %H:%M:%S").strftime("%B %d, %Y")
     return render_template("profile.html", user=user, summary=summary,
-                           member_since=member_since, recent=recent, categories=categories)
+                           member_since=member_since, recent=recent, categories=categories,
+                           date_from=date_from, date_to=date_to)
 
 
 @app.route("/expenses/add")
