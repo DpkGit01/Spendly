@@ -690,6 +690,44 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ------------------------------------------------------------------ */
+/* Date Filter                                                         */
+/* ------------------------------------------------------------------ */
+
+.profile-filter { margin-bottom: 1.5rem; }
+
+.filter-form .filter-fields {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-form .form-group { margin-bottom: 0; }
+
+.btn-filter {
+    padding: 0.6rem 1.25rem;
+    background: var(--ink);
+    color: var(--paper-card);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.btn-filter:hover { background: var(--accent); }
+
+.btn-filter-clear {
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-filter-clear:hover { border-color: var(--ink); color: var(--ink); }
+
+/* ------------------------------------------------------------------ */
 /* Responsive                                                          */
 /* ------------------------------------------------------------------ */
 

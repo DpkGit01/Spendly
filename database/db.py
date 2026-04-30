@@ -69,35 +69,53 @@ def get_user_by_id(user_id):
     return user
 
 
-def get_recent_transactions(user_id, limit=5):
+def get_recent_transactions(user_id, limit=5, date_from=None, date_to=None):
     conn = get_db()
-    rows = conn.execute(
-        "SELECT id, amount, category, date, description "
-        "FROM expenses WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT ?",
-        (user_id, limit)
-    ).fetchall()
+    sql = ("SELECT id, amount, category, date, description "
+           "FROM expenses WHERE user_id = ?")
+    params = [user_id]
+    if date_from:
+        sql += " AND date >= ?"
+        params.append(date_from)
+    if date_to:
+        sql += " AND date <= ?"
+        params.append(date_to)
+    sql += " ORDER BY date DESC, id DESC LIMIT ?"
+    params.append(limit)
+    rows = conn.execute(sql, params).fetchall()
     conn.close()
     return rows
 
 
-def get_category_totals(user_id):
+def get_category_totals(user_id, date_from=None, date_to=None):
     conn = get_db()
-    rows = conn.execute(
-        "SELECT category, COUNT(*) AS count, SUM(amount) AS total "
-        "FROM expenses WHERE user_id = ? GROUP BY category ORDER BY total DESC",
-        (user_id,)
-    ).fetchall()
+    sql = ("SELECT category, COUNT(*) AS count, SUM(amount) AS total "
+           "FROM expenses WHERE user_id = ?")
+    params = [user_id]
+    if date_from:
+        sql += " AND date >= ?"
+        params.append(date_from)
+    if date_to:
+        sql += " AND date <= ?"
+        params.append(date_to)
+    sql += " GROUP BY category ORDER BY total DESC"
+    rows = conn.execute(sql, params).fetchall()
     conn.close()
     return rows
 
 
-def get_expense_summary(user_id):
+def get_expense_summary(user_id, date_from=None, date_to=None):
     conn = get_db()
-    row = conn.execute(
-        "SELECT COUNT(*) AS count, COALESCE(SUM(amount), 0) AS total "
-        "FROM expenses WHERE user_id = ?",
-        (user_id,)
-    ).fetchone()
+    sql = ("SELECT COUNT(*) AS count, COALESCE(SUM(amount), 0) AS total "
+           "FROM expenses WHERE user_id = ?")
+    params = [user_id]
+    if date_from:
+        sql += " AND date >= ?"
+        params.append(date_from)
+    if date_to:
+        sql += " AND date <= ?"
+        params.append(date_to)
+    row = conn.execute(sql, params).fetchone()
     conn.close()
     return {"count": row["count"], "total": row["total"]}
 
