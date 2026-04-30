@@ -1,7 +1,7 @@
 import sqlite3
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
-from database.db import create_user, get_db, get_user_by_email, init_db, seed_db
+from database.db import create_user, get_category_totals, get_db, get_expense_summary, get_recent_transactions, get_user_by_email, get_user_by_id, init_db, seed_db
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-change-in-prod"
@@ -47,14 +47,14 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if session.get("user_id"):
-        return redirect(url_for("landing"))
+        return redirect(url_for("profile"))
     if request.method == "POST":
         email    = request.form.get("email", "").strip()
         password = request.form.get("password", "")
         user = get_user_by_email(email)
         if user and check_password_hash(user["password_hash"], password):
             session["user_id"] = user["id"]
-            return redirect(url_for("landing"))
+            return redirect(url_for("profile"))
         return render_template("login.html", error="Invalid email or password.")
     return render_template("login.html")
 
@@ -81,7 +81,17 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    if not session.get("user_id"):
+        flash("Please log in to view your profile.")
+        return redirect(url_for("login"))
+    from datetime import datetime
+    user = get_user_by_id(session["user_id"])
+    summary = get_expense_summary(session["user_id"])
+    recent = get_recent_transactions(session["user_id"])
+    categories = get_category_totals(session["user_id"])
+    member_since = datetime.strptime(user["created_at"], "%Y-%m-%d %H:%M:%S").strftime("%B %d, %Y")
+    return render_template("profile.html", user=user, summary=summary,
+                           member_since=member_since, recent=recent, categories=categories)
 
 
 @app.route("/expenses/add")
